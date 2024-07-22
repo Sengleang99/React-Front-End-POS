@@ -146,7 +146,7 @@ const Employee = () => {
         <Table.Column
           title="Actions"
           key="actions"
-          render={(text, employee) => (
+          render={(employee) => (
             <>
               <EditOutlined 
                 onClick={() => handleEditShow(employee)}

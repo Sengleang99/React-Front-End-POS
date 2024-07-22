@@ -289,7 +289,7 @@ const Product = () => {
          dataSource={filteredData}
          columns={columns}
          rowKey="products_id"
-         pagination={{ pageSize: 5 }}
+         pagination={{ pageSize: 10 }}
       >
       </Table>
     </div>

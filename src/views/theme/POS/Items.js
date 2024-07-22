@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AudioOutlined, PlusOutlined } from '@ant-design/icons';
+import { AudioOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Input, Card, List, Spin, message } from 'antd';
 
 const { Search } = Input;
@@ -75,6 +75,7 @@ const Items = ({ onAddToCart }) => {
       <List
         grid={{ gutter: 16, column: 3 }}
         dataSource={filteredData}
+        pagination={{ pageSize: 6 }}
         renderItem={product => (
           <List.Item>
             <Card
@@ -89,7 +90,7 @@ const Items = ({ onAddToCart }) => {
               title={product.categories_name}
               bordered={false}
               extra={
-                <PlusOutlined
+                <ShoppingCartOutlined
                   onClick={() => onAddToCart(product)}
                   style={{ fontSize: '25px', color: '#84c2f5' }}
                 />
@@ -98,8 +99,8 @@ const Items = ({ onAddToCart }) => {
               <h6 style={{ fontSize: '15px' }}>{product.product_name}</h6>
               <p>{product.description}</p>
               <p style={{ color: 'red', fontWeight: 'bold' }}>{product.price}$</p>
-              <p>Stock: {product.stock_quantity}</p>
             </Card>
+          
           </List.Item>
         )}
       />

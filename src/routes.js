@@ -8,7 +8,8 @@ const Category = React.lazy(() => import('./views/theme/Category/Category'))
 const POS = React.lazy(() => import('./views/theme/POS/POS'))
 const Payment = React.lazy(() => import('./views/theme/Payment/Payment'))
 const Employee = React.lazy(() => import('./views/theme/Employee/Employee'))
-const Transactions = React.lazy(() => import('./views/theme/Transactions/Transactions'))
+const Order = React.lazy(() => import('./views/theme/Order/Order'))
+const OrderDetail = React.lazy(() => import('./views/theme/OrderDetail/OrderDetail'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -20,7 +21,8 @@ const routes = [
   { path: '/theme/Payment', name: 'Payment', element: Payment },
   { path: '/theme/Employee', name: 'Employee', element: Employee },
   { path: '/theme/Customer', name: 'Customer', element: Customer },
-  { path: '/theme/Transactions', name: 'Transactions', element: Transactions },
+  { path: '/theme/Order', name: 'Order', element: Order },
+  { path: '/theme/OrderDetail', name: 'OrderDetail', element: OrderDetail },
 ]
 
 export default routes

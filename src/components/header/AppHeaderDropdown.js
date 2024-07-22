@@ -5,10 +5,7 @@ import {
   CDropdownItem,
   CDropdownMenu,
 } from '@coreui/react'
-import {
-  cilBell,
 
-} from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
 const AppHeaderDropdown = () => {
