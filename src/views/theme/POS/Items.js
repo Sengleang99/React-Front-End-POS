@@ -57,7 +57,7 @@ const Items = ({ onAddToCart }) => {
       className='site-layout-content'
       style={{
         padding: '24px',
-        maxWidth: '900px',
+        maxWidth: '100%',
         margin: 'auto',
         backgroundColor: '#fff',
         borderRadius: '8px',
@@ -79,28 +79,31 @@ const Items = ({ onAddToCart }) => {
         renderItem={product => (
           <List.Item>
             <Card
+              hoverable
               style={{
-                padding: '3px',
-                maxWidth: '900px',
-                margin: 'auto',
-                backgroundColor: '#fff',
+                padding: '10px',
                 borderRadius: '8px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               }}
-              title={product.categories_name}
-              bordered={false}
-              extra={
+              cover={
+                <img
+                  alt={product.product_name}
+                  src={product.image ? `http://127.0.0.1:8000/storage/${product.image}` : 'https://via.placeholder.com/150'}
+                  style={{  width:'100%', objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                />
+              }
+              actions={[
                 <ShoppingCartOutlined
+                  key="add-to-cart"
                   onClick={() => onAddToCart(product)}
                   style={{ fontSize: '25px', color: '#84c2f5' }}
                 />
-              }
+              ]}
             >
-              <h6 style={{ fontSize: '15px' }}>{product.product_name}</h6>
-              <p>{product.description}</p>
-              <p style={{ color: 'red', fontWeight: 'bold' }}>{product.price}$</p>
+              <h6 style={{ fontSize: '15px', textAlign: 'center', fontWeight: 'bold' }}>{product.product_name}</h6>
+              <p style={{ textAlign: 'center' }}>{product.description}</p>
+              <p style={{ color: 'red', fontWeight: 'bold', textAlign: 'center' }}>{product.price}$</p>
             </Card>
-          
           </List.Item>
         )}
       />

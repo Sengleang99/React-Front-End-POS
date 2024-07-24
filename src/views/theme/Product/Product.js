@@ -17,15 +17,21 @@ const Product = () => {
 
   // Modal state
   const [show, setShow] = useState(false);
+  const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null); // State for image URL
 
   const handleClose = () => {
     setShow(false);
     form.resetFields();
+    setImage(null);
+    setImageUrl(null); // Reset image URL
   };
 
   const handleShow = () => {
     form.resetFields();
     setProductId(null);
+    setImage(null);
+    setImageUrl(null); // Reset image URL
     setShow(true);
   };
 
@@ -38,6 +44,8 @@ const Product = () => {
       categories_id: product.categories_id,
       stock_quantity: product.stock_quantity,
     });
+    setImageUrl(`http://127.0.0.1:8000/storage/${product.image}`); // Set the image URL for preview
+    setImage(null);
     setShow(true);
   };
 
@@ -74,13 +82,21 @@ const Product = () => {
 
   // Handle product creation
   const handleCreate = async (values) => {
+    const formData = new FormData();
+    formData.append('product_name', values.product_name);
+    formData.append('description', values.description);
+    formData.append('price', values.price);
+    formData.append('categories_id', values.categories_id);
+    formData.append('stock_quantity', values.stock_quantity);
+    if (image) {
+      formData.append('image', image);
+    }
+
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/addproduct', {
-        product_name: values.product_name,
-        description: values.description,
-        price: parseFloat(values.price),
-        categories_id: parseInt(values.categories_id),
-        stock_quantity: parseInt(values.stock_quantity),
+      const response = await axios.post('http://127.0.0.1:8000/api/addproduct', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       // Update the data state with the new product
       setData([...data, response.data]);
@@ -93,30 +109,54 @@ const Product = () => {
     }
   };
 
-  // Handle product update
-  const handleUpdate = async (values) => {
-    try {
-      await axios.put(`http://127.0.0.1:8000/api/editproduct/${productId}`, {
-        product_name: values.product_name,
-        description: values.description,
-        price: parseFloat(values.price),
-        categories_id: parseInt(values.categories_id),
-        stock_quantity: parseInt(values.stock_quantity),
-      });
 
+  const handleUpdate = async (values) => {
+    const formData = new FormData();
+    formData.append('product_name', values.product_name);
+    formData.append('description', values.description);
+    formData.append('price', values.price);
+    formData.append('categories_id', values.categories_id);
+    formData.append('stock_quantity', values.stock_quantity);
+    formData.append('image', values.image);
+    
+    if (image) {
+      formData.append('image', image);
+    }
+  
+    try {
+      const response = await axios.put(`http://127.0.0.1:8000/api/editproduct/${productId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      // Assuming the API response contains the updated product data
+      const updatedProduct = response.data;
+  
+      // Update the data state with the new product details
       const updatedData = data.map((product) =>
-        product.products_id === productId ? { ...product, ...values } : product
+        product.products_id === productId ? { ...product, ...values, image: updatedProduct.image } : product
       );
       setData(updatedData);
-
-      // Show success message
+  
       messageApi.success('Product updated successfully!');
       handleClose();
     } catch (error) {
-      console.error("Error updating product", error);
-      messageApi.error('Failed to update product.');
+      console.error("Error updating product:", error.response?.data || error.message);
+  
+      if (error.response && error.response.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const errorMessage = Object.keys(validationErrors)
+          .map(key => `${key}: ${validationErrors[key].join(', ')}`)
+          .join(', ');
+        messageApi.error(`Validation failed: ${errorMessage}`);
+      } else {
+        messageApi.error(`Failed to update product. ${error.response?.data?.message || error.message}`);
+      }
     }
   };
+  
+  
 
   // Handle product deletion with confirmation
   const handleDelete = (productId) => {
@@ -135,6 +175,12 @@ const Product = () => {
         }
       },
     });
+  };
+
+  // Handle image change for preview
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+    setImageUrl(URL.createObjectURL(e.target.files[0]));
   };
 
   if (loading) {
@@ -156,6 +202,15 @@ const Product = () => {
       key: 'products_id'
     },
     {
+      title: 'Image',
+      dataIndex: 'image',
+      key: 'image',
+      render: (text) => {
+        const imageUrl = text ? `http://127.0.0.1:8000/storage/${text}` : ''; // Ensure correct URL path
+        return imageUrl ? <img src={imageUrl} alt="Product" style={{ width: '40px' }} /> : 'No Image';
+      }
+    },
+    {
       title: 'Product Name',
       dataIndex: 'product_name',
       key: 'product_name'
@@ -169,15 +224,6 @@ const Product = () => {
       title: 'Price',
       dataIndex: 'price',
       key: 'price'
-    },
-    {
-      title: 'Category',
-      dataIndex: 'categories_id',
-      key: 'categories_id',
-      render: (text) => {
-        const category = categories.find(c => c.categories_id === text);
-        return category ? category.categories_name : 'Unknown';
-      }
     },
     {
       title: 'Stock Quantity',
@@ -205,7 +251,7 @@ const Product = () => {
         </span>
       ),
     }
-  ]
+  ];
 
   return (
     <div className='container-fluid'>
@@ -273,25 +319,22 @@ const Product = () => {
           >
             <Input type="number" />
           </Form.Item>
+          <Form.Item
+            label="Image"
+            name="image"
+          >
+            <input type="file" onChange={handleImageChange} />
+            {imageUrl && <img src={imageUrl} alt="No image" style={{ width: '50px', marginTop: '10px' }} />}
+          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Save
-            </Button>
-            <Button onClick={handleClose} style={{ marginLeft: '8px' }}>
-              Cancel
+              {productId ? 'Update Product' : 'Add Product'}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
 
-      <Table
-         className='mt-3'
-         dataSource={filteredData}
-         columns={columns}
-         rowKey="products_id"
-         pagination={{ pageSize: 10 }}
-      >
-      </Table>
+      <Table columns={columns} dataSource={filteredData} rowKey="products_id" />
     </div>
   );
 };

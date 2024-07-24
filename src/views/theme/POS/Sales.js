@@ -76,53 +76,54 @@ const Sales = ({ cart, setCart }) => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
     // function add sales products
-  const handleCheckOut = async () => {
-    try {
-      const values = await form.validateFields();
-      const total = calculateTotal();
-      const order_date = moment().format('DD-MMM-YYYY');
-
-      if (cart.length === 0) {
-        message.error('Cart is empty.');
-        return;
+    const handleCheckOut = async () => {
+      try {
+          const values = await form.validateFields();
+          const total = calculateTotal();
+          const order_date = moment().format('YYYY-MM-DD'); // Changed date format to match SQL standard
+  
+          if (cart.length === 0) {
+              message.error('Cart is empty.');
+              return;
+          }
+  
+          // data from field database
+          const orderData = {
+              customers_id: values.customers_id,
+              payment_methods_id: values.payment_methods_id,
+              order_statuses_id: values.order_statuses_id,
+              order_date: order_date,
+              total: total,
+              items: cart.map(item => ({
+                  products_id: item.products_id,
+                  quantity: item.quantity,
+                  price: item.price
+              }))
+          };
+  
+          console.log(orderData);
+  
+          // fetch API
+          const response = await axios.post('http://127.0.0.1:8000/api/addorder', orderData);
+  
+          if (response.status === 201) {
+              message.success('Order placed successfully!');
+              setCart([]); // Clear cart after successful order
+              setOrderData({ ...orderData, totalItems: calculateTotalItems(), subTotal: calculateSubTotal() }); // Store order data for the invoice
+              setInvoiceVisible(true); // Show the invoice modal
+          } else {
+              message.error('Failed to place order.');
+          }
+      } catch (error) {
+          if (error.response && error.response.data) {
+              message.error(`Error placing order: ${error.response.data.message}`);
+          } else {
+              console.error("Error placing order", error);
+              message.error('Failed to place order.');
+          }
       }
-      // data from field database
-      const orderData = {
-        customers_id: values.customers_id,
-        payment_methods_id: values.payment_methods_id,
-        order_statuses_id: values.order_statuses_id,
-        order_date: order_date,
-        total: total,
-        items: cart.map(item => ({
-          products_id: item.products_id,
-          quantity: item.quantity,
-          price: item.price
-        }))
-      };
-
-      console.log(orderData);
-
-      // fetch API
-      const response = await axios.post('http://127.0.0.1:8000/api/addorder', orderData);
-
-      if (response.status === 201) {
-        message.success('Order placed successfully!');
-        setCart([]); // Clear cart after successful order
-        setOrderData({ ...orderData, totalItems: calculateTotalItems(), subTotal: calculateSubTotal() }); // Store order data for the invoice
-        setInvoiceVisible(true); // Show the invoice modal
-      } else {
-        message.error('Failed to place order.');
-      }
-    } catch (error) {
-      if (error.response && error.response.data) {
-        message.error(`Error placing order: ${error.response.data.message}`);
-      } else {
-        console.error("Error placing order", error);
-        message.error('Failed to place order.');
-      }
-    }
   };
-
+  
   // remove item product
   const handleRemoveItem = (productId) => {
     const updatedCart = cart.map(item => {
